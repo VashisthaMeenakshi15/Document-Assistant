@@ -1,0 +1,230 @@
+/* ==========================================================================
+   1. Global Soothing Light Canvas
+   ========================================================================== */
+.stApp {
+    background-color: #F8FAFC !important; /* Soft Slate Off-White */
+    color: #1E293B !important; /* Muted Dark Navy Text */
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+p, span, label, div {
+    color: #1E293B;
+}
+
+/* ==========================================================================
+   2. Main Header & Subtitle
+   ========================================================================== */
+.main-header {
+    color: #0F172A !important;
+    font-weight: 700 !important;
+    font-size: 2.1rem !important;
+    margin-bottom: 4px !important;
+    letter-spacing: -0.3px;
+}
+
+.sub-header {
+    color: #64748B !important; /* Soothing Muted Slate */
+    font-size: 0.98rem !important;
+    font-weight: 400;
+    margin-bottom: 22px !important;
+}
+
+/* ==========================================================================
+   3. Sidebar & Input Controls
+   ========================================================================== */
+section[data-testid="stSidebar"] {
+    background-color: #F1F5F9 !important; /* Soft Neutral Gray */
+    border-right: 1px solid #E2E8F0 !important;
+}
+
+section[data-testid="stSidebar"] h1,
+section[data-testid="stSidebar"] h2,
+section[data-testid="stSidebar"] h3,
+section[data-testid="stSidebar"] h4 {
+    color: #0F172A !important;
+    font-weight: 700 !important;
+    margin-top: 12px !important;
+    margin-bottom: 8px !important;
+}
+
+label[data-testid="stWidgetLabel"],
+section[data-testid="stSidebar"] label {
+    color: #334155 !important;
+    font-weight: 600 !important;
+    font-size: 0.92rem !important;
+}
+
+/* File Uploader Dropzone */
+div[data-testid="stFileUploader"] {
+    background-color: #FFFFFF !important;
+    border: 1px dashed #CBD5E1 !important;
+    border-radius: 12px !important;
+    padding: 10px !important;
+}
+
+div[data-testid="stFileUploader"] span,
+div[data-testid="stFileUploader"] small {
+    color: #64748B !important;
+}
+
+/* Selectbox Dropdown */
+div[data-baseweb="select"] > div {
+    background-color: #FFFFFF !important;
+    color: #1E293B !important;
+    border: 1px solid #CBD5E1 !important;
+    border-radius: 8px !important;
+}
+
+/* Sidebar Status Card */
+.sidebar-card {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    padding: 14px 16px;
+    border-radius: 12px;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.sidebar-card span {
+    color: #16A34A !important;
+    font-weight: 700;
+}
+
+.sidebar-card small {
+    color: #475569 !important;
+}
+
+/* ==========================================================================
+   4. Chat Bubbles (Calm & Soothing Colors)
+   ========================================================================== */
+
+/* User Chat Bubble (Right Aligned - Soft Muted Indigo Tint) */
+div[data-testid="stChatMessage"]:nth-child(even),
+div[data-testid="stChatMessage"]:has(div[aria-label="Chat message from user"]) {
+    flex-direction: row-reverse !important;
+    background: #EEF2FF !important; /* Soft Soothing Indigo Tint */
+    border: 1px solid #C7D2FE !important;
+    border-radius: 18px 18px 2px 18px !important;
+    margin-left: auto !important;
+    max-width: 78% !important;
+    box-shadow: 0 2px 6px rgba(99, 102, 241, 0.05) !important;
+    padding: 12px 18px !important;
+}
+
+div[data-testid="stChatMessage"]:nth-child(even) p,
+div[data-testid="stChatMessage"]:has(div[aria-label="Chat message from user"]) p {
+    color: #1E1B4B !important; /* Deep Navy Text for High Readability */
+    -webkit-text-fill-color: #1E1B4B !important;
+    font-size: 0.98rem;
+    line-height: 1.5;
+}
+
+/* Assistant Chat Bubble (Left Aligned - Clean White Card) */
+div[data-testid="stChatMessage"]:nth-child(odd),
+div[data-testid="stChatMessage"]:has(div[aria-label="Chat message from assistant"]) {
+    background-color: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 18px 18px 18px 2px !important;
+    margin-right: auto !important;
+    max-width: 82% !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03) !important;
+    padding: 14px 20px !important;
+}
+
+div[data-testid="stChatMessage"]:nth-child(odd) p,
+div[data-testid="stChatMessage"]:has(div[aria-label="Chat message from assistant"]) p {
+    color: #1E293B !important;
+    -webkit-text-fill-color: #1E293B !important;
+    font-size: 0.98rem;
+    line-height: 1.6;
+}
+
+/* ==========================================================================
+   5. Bottom Chat Input Bar
+   ========================================================================== */
+
+/* Outer Dock */
+div[data-testid="stBottom"],
+div[data-testid="stBottom"] > div {
+    background-color: #F8FAFC !important;
+}
+
+/* Input Bar Outer Box */
+div[data-testid="stChatInput"] {
+    background-color: #FFFFFF !important;
+    border: 1px solid #CBD5E1 !important;
+    border-radius: 14px !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
+}
+
+div[data-testid="stChatInput"] div[data-baseweb="base-input"],
+div[data-testid="stChatInput"] div[data-baseweb="textarea"] {
+    background-color: #FFFFFF !important;
+}
+
+/* Textarea Input Text */
+div[data-testid="stChatInput"] textarea {
+    background-color: #FFFFFF !important;
+    color: #1E293B !important;
+    -webkit-text-fill-color: #1E293B !important;
+    caret-color: #4F46E5 !important;
+    font-size: 0.96rem !important;
+}
+
+div[data-testid="stChatInput"] textarea::placeholder {
+    color: #94A3B8 !important;
+    -webkit-text-fill-color: #94A3B8 !important;
+}
+
+/* Send Button */
+div[data-testid="stChatInput"] button {
+    background-color: #475569 !important; /* Muted Slate */
+    color: #FFFFFF !important;
+    border-radius: 8px !important;
+}
+
+div[data-testid="stChatInput"] button:hover {
+    background-color: #334155 !important;
+}
+
+/* ==========================================================================
+   6. Soothing Action Buttons & Citations
+   ========================================================================== */
+
+/* All Streamlit Buttons (Suggested Prompts & Build Vector Store) */
+.stButton>button {
+    background: #FFFFFF !important;
+    color: #334155 !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 10px !important;
+    font-weight: 500 !important;
+    padding: 8px 16px !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+}
+
+.stButton>button p, 
+.stButton>button span {
+    color: #334155 !important;
+    -webkit-text-fill-color: #334155 !important;
+}
+
+.stButton>button:hover {
+    background: #F1F5F9 !important;
+    border-color: #CBD5E1 !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Citation Tags */
+.citation-tag {
+    display: inline-block;
+    background-color: #F1F5F9;
+    color: #475569;
+    border: 1px solid #CBD5E1;
+    border-radius: 12px;
+    padding: 4px 12px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    margin: 4px 4px 2px 0px;
+}

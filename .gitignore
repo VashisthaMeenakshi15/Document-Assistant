@@ -1,0 +1,19 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+venv/
+.venv/
+
+# Local databases & temporary files
+chroma_db/
+tmp/
+*.tmp
+
+# Environment variables & secrets
+.env
+.streamlit/secrets.toml
+
+# Local Ollama backup scripts (Ignored for Cloud Deployment)
+rag_ollama.py

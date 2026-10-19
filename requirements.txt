@@ -1,0 +1,19 @@
+streamlit
+python-dotenv
+langchain
+langchain-classic
+langchain-community
+# To deploy on streamlit, need GROQ, will replace ollama with groq
+# langchain-ollama 
+langchain-groq
+langchain-huggingface
+chromadb
+python-pptx
+pypdf
+python-docx
+beautifulsoup4
+pandas
+openpyxl
+sentence-transformers
+torchvision
+pypdf
