@@ -63,16 +63,23 @@ with st.sidebar:
         # ["qwen2.5:3b", "llama3.2:3b", "qwen2.5:7b", "mistral:7b"], 
         # index=0
     # )
-    # Current Groq model IDs; older Llama and Qwen model IDs have been retired.
+    # GROQ Models (for Deployment):
+
+    MODEL_DESCRIPTIONS = {
+    "llama-3.3-70b-versatile": "💡 Best Overall: High accuracy for complex Q&A and summaries.",
+    "qwen/qwen3.8-27b": "📊 Best for Tables: Optimized for Excel, CSVs, and structured data.",
+    "openai/gpt-oss-120b": "🧠 Deep Reasoning: Handles multi-step analytical and logic queries.",
+    "llama-3.1-8b-instant": "⚡ Ultra Fast: Sub-second responses for quick lookups."
+    }
+
     selected_model = st.selectbox(
-        "Model Architecture", 
-        [
-        "qwen/qwen3.8-27b",
-        "openai/gpt-oss-120b",
-        "openai/gpt-oss-20b"
-        ], 
+        "Model Architecture",
+        options=list(MODEL_DESCRIPTIONS.keys()),
         index=0
     )
+
+    # Renders a subtle 1-line hint below the selector
+    st.caption(MODEL_DESCRIPTIONS[selected_model])
     
     process_btn = st.button("🚀 Build Vector Store", use_container_width=True)
 
@@ -99,7 +106,7 @@ with st.sidebar:
 # 5. Header & Starter Prompt Chips
 # -----------------------------------------------------------------------------
 st.markdown('<p class="main-header">⚡ Local Document RAG Assistant</p>', unsafe_allow_html=True)
-st.markdown('<p class="sub-header">Multi-Format Document Intelligence powered by Groq Cloud & ChromaDB</p>', unsafe_allow_html=True)
+st.markdown('<p class="sub-header">100% Private & Free Multi-Format Document Intelligence powered by Groq & ChromaDB</p>', unsafe_allow_html=True)
 
 # Quick Starter Prompt Buttons
 if st.session_state.indexed and len(st.session_state.messages) == 0:
