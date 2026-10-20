@@ -66,10 +66,9 @@ with st.sidebar:
     # GROQ Models (for Deployment):
 
     MODEL_DESCRIPTIONS = {
-    "llama-3.1-8b-instant": "⚡ Ultra Fast & Reliable: Excellent for document Q&A and instant summaries.",
-    "openai/gpt-oss-120b": "🧠 High Reasoning: Best for complex, multi-step analytical document queries.",
-    "qwen/qwen3.8-27b": "📊 Structured Data: Best for Excel, CSV spreadsheets, and tabular data.",
-    "openai/gpt-oss-20b": "💡 Lightweight Reasoning: Fast, balanced analysis for routine tasks."
+    "openai/gpt-oss-120b": "🧠 Flagship Reasoning: High accuracy for complex document Q&A and analysis.",
+    "openai/gpt-oss-20b": "⚡ Fast & Efficient: Sub-second responses for quick lookups and short summaries.",
+    "qwen/qwen3.8-27b": "📊 Structured Data: Optimized for Excel spreadsheets, CSVs, and tabular data."
     }
 
     selected_model = st.selectbox(
