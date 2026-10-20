@@ -17,3 +17,5 @@ tmp/
 
 # Local Ollama backup scripts (Ignored for Cloud Deployment)
 rag_ollama.py
+app_single_session.py
+rag_single_session.py

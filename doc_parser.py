@@ -10,7 +10,7 @@ from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 
-def parse_documents(uploaded_files, chunk_size: int = 500, chunk_overlap: int = 100):
+def parse_documents(uploaded_files, chunk_size: int = 1000, chunk_overlap: int = 150):
     """
     Parses PPTX, PDF, DOCX, HTML, Excel, and CSV files, attaching location metadata,
     and returns chunked LangChain Document objects.

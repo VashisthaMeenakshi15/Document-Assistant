@@ -70,7 +70,7 @@ class RAGPipeline:
                 "in .streamlit/secrets.toml."
             )
 
-        retriever = self.vectorstore.as_retriever(search_kwargs={"k": 3})
+        retriever = self.vectorstore.as_retriever(search_kwargs={"k": 4})
 
         # Initialize Groq Cloud LLM runner
         llm = ChatGroq(
