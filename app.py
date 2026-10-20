@@ -1,168 +1,175 @@
-import os
+# This file supports multi session RAG pipelines with separate ChromaDB collections per session.
+
 import streamlit as st
 from doc_parser import parse_documents
 from rag import RAGPipeline
 
-# -----------------------------------------------------------------------------
 # 1. Page Configuration
-# -----------------------------------------------------------------------------
 st.set_page_config(
-    page_title="Enterprise Local RAG",
-    page_icon="⚡",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    page_title="Multi-Document RAG Workspace",
+    page_icon="📚",
+    layout="wide"
 )
 
-# -----------------------------------------------------------------------------
-# 2. External CSS Loader Helper
-# -----------------------------------------------------------------------------
-def load_css(file_path: str = "style.css"):
-    """Reads external CSS file and injects rules into Streamlit."""
-    if os.path.exists(file_path):
-        with open(file_path, "r", encoding="utf-8") as f:
-            st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
-    else:
-        st.warning(f"Stylesheet '{file_path}' not found.")
-
-# Load custom styles
-load_css("style.css")
-
-# -----------------------------------------------------------------------------
-# 3. Session State Initialization
-# -----------------------------------------------------------------------------
-if "rag_pipeline" not in st.session_state:
-    st.session_state.rag_pipeline = RAGPipeline()
-
-if "indexed" not in st.session_state:
-    st.session_state.indexed = False
-
-if "chunk_count" not in st.session_state:
-    st.session_state.chunk_count = 0
-
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-
-# -----------------------------------------------------------------------------
-# 4. Sidebar Controls & Document Ingestion
-# -----------------------------------------------------------------------------
-with st.sidebar:
-    st.markdown("### 📁 Knowledge Base")
-    
-    uploaded_files = st.file_uploader(
-        "Upload Documents", 
-        type=["pptx", "pdf", "docx", "html", "htm", "xlsx", "xls", "csv"], 
-        accept_multiple_files=True,
-        help="Supports PPTX, PDF, Word, HTML, Excel, and CSV files."
-    )
-    
-    st.markdown("---")
-    st.markdown("### ⚙️ LLM Configuration")
-    # Ollama models
-    # selected_model = st.selectbox(
-        # "Model Architecture", 
-        # ["qwen2.5:3b", "llama3.2:3b", "qwen2.5:7b", "mistral:7b"], 
-        # index=0
-    # )
-    # GROQ Models (for Deployment):
-
-    MODEL_DESCRIPTIONS = {
-    "openai/gpt-oss-120b": "🧠 Flagship Reasoning: High accuracy for complex document Q&A and analysis.",
+# 2. Active Model Definitions & Descriptions
+MODEL_DESCRIPTIONS = {
+    "openai/gpt-oss-120b": "🧠 Flagship Reasoning: High accuracy for complex document Q&A and deep analysis.",
     "openai/gpt-oss-20b": "⚡ Fast & Efficient: Sub-second responses for quick lookups and short summaries.",
     "qwen/qwen3.8-27b": "📊 Structured Data: Optimized for Excel spreadsheets, CSVs, and tabular data."
-    }
+}
 
+# 3. Initialize Global Multi-Session State
+if "workspaces" not in st.session_state:
+    st.session_state.workspaces = {}  # Structure: { "Workspace_Name": { "pipeline": RAGPipeline, "messages": [], "files": [] } }
+
+if "current_workspace" not in st.session_state:
+    st.session_state.current_workspace = None
+
+# --- SIDEBAR: Model Selector & Workspace Management ---
+with st.sidebar:
+    st.title("⚙️ RAG Settings")
+    
+    # Model Dropdown Selector
     selected_model = st.selectbox(
-        "Model Architecture",
+        "Select LLM Architecture",
         options=list(MODEL_DESCRIPTIONS.keys()),
         index=0
     )
-
-    # Renders a subtle 1-line hint below the selector
     st.caption(MODEL_DESCRIPTIONS[selected_model])
+    st.markdown("---")
     
-    process_btn = st.button("🚀 Build Vector Store", use_container_width=True)
-
-    # File Ingestion Action
-    if process_btn and uploaded_files:
-        with st.spinner("Processing & indexing documents..."):
-            docs = parse_documents(uploaded_files)
-            st.session_state.rag_pipeline.build_vectorstore(docs)
-            st.session_state.indexed = True
-            st.session_state.chunk_count = len(docs)
-            st.success("Vector DB successfully created!")
-
-    # Knowledge Base Metrics Summary Card
-    if st.session_state.indexed:
-        st.markdown(f"""
-        <div class="sidebar-card">
-            <span style="color: #10B981; font-weight: bold;">● Status: Ready</span><br/>
-            <small style="color: #9CA3AF;">Files Uploaded: <b>{len(uploaded_files)}</b></small><br/>
-            <small style="color: #9CA3AF;">Total Chunks Indexed: <b>{st.session_state.chunk_count}</b></small>
-        </div>
-        """, unsafe_allow_html=True)
-
-# -----------------------------------------------------------------------------
-# 5. Header & Starter Prompt Chips
-# -----------------------------------------------------------------------------
-st.markdown('<p class="main-header">⚡ Local Document RAG Assistant</p>', unsafe_allow_html=True)
-st.markdown('<p class="sub-header">100% Private & Free Multi-Format Document Intelligence powered by Groq & ChromaDB</p>', unsafe_allow_html=True)
-
-# Quick Starter Prompt Buttons
-if st.session_state.indexed and len(st.session_state.messages) == 0:
-    st.markdown("##### 💡 Suggested Questions")
-    col1, col2, col3 = st.columns(3)
+    st.title("📂 Workspace Manager")
     
-    with col1:
-        if st.button("📝 Summarize key topics", use_container_width=True):
-            st.session_state.prompt_trigger = "Provide a high-level summary of the main topics discussed across the uploaded documents."
-    with col2:
-        if st.button("📊 Extract main metrics", use_container_width=True):
-            st.session_state.prompt_trigger = "Extract all key numerical data, dates, and metrics mentioned in the documents."
-    with col3:
-        if st.button("❓ What are action items?", use_container_width=True):
-            st.session_state.prompt_trigger = "List all important action items, conclusions, or next steps found in the documents."
+    # Create Workspace Controls
+    new_ws_name = st.text_input("New Workspace Name", placeholder="e.g., NLP PPTs or Resume Review")
+    if st.button("➕ Create Workspace", use_container_width=True):
+        clean_name = new_ws_name.strip()
+        if clean_name:
+            if clean_name not in st.session_state.workspaces:
+                st.session_state.workspaces[clean_name] = {
+                    "pipeline": RAGPipeline(collection_name=clean_name),
+                    "messages": [],
+                    "files": []
+                }
+                st.session_state.current_workspace = clean_name
+                st.success(f"Workspace '{clean_name}' created!")
+                st.rerun()
+            else:
+                st.warning("A workspace with this name already exists.")
+        else:
+            st.warning("Please enter a valid workspace name.")
 
-# Handle clicked prompt chips
-user_input = st.chat_input("Ask a question about your documents...")
-if "prompt_trigger" in st.session_state:
-    user_input = st.session_state.prompt_trigger
-    del st.session_state.prompt_trigger
+    # Select Active Workspace
+    if st.session_state.workspaces:
+        st.markdown("---")
+        workspace_names = list(st.session_state.workspaces.keys())
+        
+        # Ensure current workspace index is valid
+        current_idx = workspace_names.index(st.session_state.current_workspace) if st.session_state.current_workspace in workspace_names else 0
+        
+        selected_ws = st.selectbox(
+            "Active Workspace",
+            options=workspace_names,
+            index=current_idx
+        )
+        st.session_state.current_workspace = selected_ws
 
-# -----------------------------------------------------------------------------
-# 6. Chat History Rendering & Input Handling
-# -----------------------------------------------------------------------------
-for msg in st.session_state.messages:
-    avatar = "🧑‍💻" if msg["role"] == "user" else "🤖"
-    with st.chat_message(msg["role"], avatar=avatar):
+        # Active Workspace Info
+        ws_info = st.session_state.workspaces[st.session_state.current_workspace]
+        st.markdown(f"### 📄 Files in `{st.session_state.current_workspace}`")
+        if ws_info["files"]:
+            for file_name in ws_info["files"]:
+                st.caption(f"• {file_name}")
+        else:
+            st.caption("No files uploaded to this workspace yet.")
+            
+        # Reset current workspace button
+        if st.button("🗑️ Reset Active Workspace", use_container_width=True):
+            st.session_state.workspaces[st.session_state.current_workspace] = {
+                "pipeline": RAGPipeline(collection_name=st.session_state.current_workspace),
+                "messages": [],
+                "files": []
+            }
+            st.success(f"Reset workspace '{st.session_state.current_workspace}'!")
+            st.rerun()
+
+# --- MAIN INTERFACE ---
+if not st.session_state.current_workspace:
+    st.info("👈 Please create or select a Workspace from the sidebar to begin!")
+    st.stop()
+
+# Short reference handle for active workspace state
+active_ws_name = st.session_state.current_workspace
+ws_data = st.session_state.workspaces[active_ws_name]
+
+st.header(f"💬 Chat Workspace: {active_ws_name}")
+
+# --- DOCUMENT UPLOADER SECTION ---
+with st.expander("📥 Upload & Index Documents for this Workspace", expanded=not bool(ws_data["files"])):
+    uploaded_files = st.file_uploader(
+        "Upload PDF, Word, PPTX, Excel, or CSV files",
+        accept_multiple_files=True,
+        type=["pdf", "docx", "pptx", "xlsx", "csv", "html"]
+    )
+    
+    if st.button("⚡ Index Documents", use_container_width=True):
+        if uploaded_files:
+            with st.spinner(f"Parsing and indexing documents into `{active_ws_name}`..."):
+                docs = parse_documents(uploaded_files)
+                
+                # Check for empty text extraction
+                if not docs:
+                    st.error("⚠️ No readable text could be extracted from the uploaded file(s). If it is a scanned PDF, OCR is required.")
+                else:
+                    # Append documents to workspace ChromaDB collection
+                    ws_data["pipeline"].add_to_vectorstore(docs)
+                    
+                    # Update uploaded file registry
+                    for f in uploaded_files:
+                        if f.name not in ws_data["files"]:
+                            ws_data["files"].append(f.name)
+                            
+                    st.success(f"Successfully indexed {len(docs)} text chunks into workspace '{active_ws_name}'!")
+        else:
+            st.warning("Please upload at least one document first.")
+
+st.markdown("---")
+
+# --- CHAT INTERFACE SECTION ---
+
+# 1. Render Active Workspace Chat History
+for msg in ws_data["messages"]:
+    with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
-if user_input:
-    # 1. User Input (Right Aligned via CSS)
-    st.session_state.messages.append({"role": "user", "content": user_input})
-    with st.chat_message("user", avatar="🧑‍💻"):
-        st.markdown(user_input)
+# 2. Chat Input Handler
+if user_query := st.chat_input(f"Ask anything about files in '{active_ws_name}'..."):
+    # Append user question to workspace state and render UI
+    ws_data["messages"].append({"role": "user", "content": user_query})
+    with st.chat_message("user"):
+        st.markdown(user_query)
 
-    # 2. Assistant Output (Left Aligned via CSS)
-    if not st.session_state.indexed:
-        with st.chat_message("assistant", avatar="🤖"):
-            st.warning("Please upload documents and click 'Build Vector Store' in the sidebar first.")
+    # Validate vectorstore initialization
+    if ws_data["pipeline"].vectorstore is None:
+        response_text = "⚠️ Please upload and index at least one document in this workspace before asking questions."
+        citations = []
     else:
-        with st.chat_message("assistant", avatar="🤖"):
-            with st.spinner("Searching knowledge base..."):
-                answer, doc_refs = st.session_state.rag_pipeline.query(
-                    question=user_input, 
+        with st.spinner("Searching workspace & generating response..."):
+            try:
+                response_text, citations = ws_data["pipeline"].query(
+                    question=user_query,
                     model_name=selected_model
                 )
+            except Exception as e:
+                response_text = f"An error occurred while generating the response: {str(e)}"
+                citations = []
 
-                final_output = answer
-                if doc_refs:
-                    final_output += "\n\n"
-                    st.markdown(answer)
-                    
-                    with st.expander("🔍 **Retrieved Sources & Citations**", expanded=False):
-                        for ref in doc_refs:
-                            st.markdown(f'<span class="citation-tag">📄 {ref}</span>', unsafe_allow_html=True)
-                else:
-                    st.markdown(final_output)
+    # Format assistant response with source citations
+    full_response = response_text
+    if citations:
+        full_response += "\n\n**Sources:**\n" + "\n".join([f"- 📄 `{c}`" for c in citations])
 
-                st.session_state.messages.append({"role": "assistant", "content": final_output})
+    # Append assistant answer to workspace state and render UI
+    ws_data["messages"].append({"role": "assistant", "content": full_response})
+    with st.chat_message("assistant"):
+        st.markdown(full_response)

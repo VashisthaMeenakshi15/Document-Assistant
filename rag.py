@@ -1,6 +1,9 @@
-#Using GROQ LLMs for RAG (Retrieval-Augmented Generation) with LangChain and ChromaDB
+# This file supports multi session RAG pipelines with separate ChromaDB collections per session. 
+# It is designed for Streamlit apps where each user session can have its own workspace and indexed documents.
+# Using GROQ LLMs for RAG (Retrieval-Augmented Generation) with LangChain and ChromaDB
 
 import os
+import re
 from pathlib import Path
 import streamlit as st
 from dotenv import dotenv_values
@@ -15,26 +18,44 @@ from prompts import RAG_SYSTEM_PROMPT
 
 
 class RAGPipeline:
-    def __init__(self, embedding_model_name: str = "BAAI/bge-small-en-v1.5"):
-        # Embeddings remain 100% local and lightweight inside ChromaDB
+    def __init__(
+        self, 
+        embedding_model_name: str = "BAAI/bge-small-en-v1.5",
+        collection_name: str = "default_session"
+    ):
+        # Format workspace name into a valid Chroma collection identifier
+        clean_name = re.sub(r'[^a-zA-Z0-9_-]', '_', collection_name).lower().strip("_")
+        self.collection_name = clean_name if clean_name else "default_session"
+        
+        # Embeddings remain local and lightweight inside ChromaDB
         self.embeddings = HuggingFaceEmbeddings(model_name=embedding_model_name)
         self.vectorstore = None
+    
+    def get_retriever(self, k: int = 3):
+        """Returns the retriever for the active vectorstore, or None if not initialized."""
+        if self.vectorstore is None:
+            return None
+        return self.vectorstore.as_retriever(search_kwargs={"k": k})
 
-    def build_vectorstore(self, documents):
-        """Creates an in-memory ChromaDB vectorstore from document chunks."""
-        self.vectorstore = Chroma.from_documents(
-            documents=documents,
-            embedding=self.embeddings
-        )
+    def add_to_vectorstore(self, documents):
+        """Creates or incrementally appends document chunks into the workspace collection."""
+        if self.vectorstore is None:
+            self.vectorstore = Chroma.from_documents(
+                documents=documents,
+                embedding=self.embeddings,
+                collection_name=self.collection_name
+            )
+        else:
+            self.vectorstore.add_documents(documents)
 
     def query(self, question: str, model_name: str = "qwen/qwen3.8-27b"):
         """
         Retrieves context chunks and streams Groq LLM responses with citations.
         """
         if self.vectorstore is None:
-            raise ValueError("Vector store has not been initialized yet.")
+            raise ValueError("Vector store has not been initialized yet in this workspace.")
 
-        # Read from the process environment, the project .env, or Streamlit secrets.
+        # Read from process environment, project .env, or Streamlit secrets
         groq_api_key = os.environ.get("GROQ_API_KEY") or dotenv_values(
             Path(__file__).with_name(".env")
         ).get("GROQ_API_KEY")
